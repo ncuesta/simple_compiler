@@ -1,0 +1,62 @@
+	programa	:	bloque
+				;
+	
+	bloque		:	declaracion
+				|	asignacion
+				|	decision
+				|	iteracion
+				|	declaracion bloque
+				|	asignacion bloque
+				|	decision bloque
+				|	iteracion bloque
+				|	error ';'
+				|	error ';' bloque
+				;
+	
+	declaracion	:	INT IDENTIFICADOR ';'
+				|	INT IDENTIFICADOR '=' expresion ';'
+				|	BOOL IDENTIFICADOR ';'
+				|	BOOL IDENTIFICADOR '=' expresion ';'
+				;
+	
+	asignacion	:	IDENTIFICADOR '=' expresion ';'
+				;
+	
+	expresion	:	termino
+				|	expresion '-' termino
+				|	expresion '+' termino
+				|	expresion OR termino
+				|	comparacion
+				;
+						
+	termino		:	factor
+				|	termino '*' factor
+				|	termino '/' factor
+				|	termino AND factor
+				|	'!' factor
+				;
+	
+	factor		:	IDENTIFICADOR
+				|	NUMERO
+				|	T
+				|	F
+				|	'(' expresion ')'
+				;
+	
+	comparacion	:	expresion '>' expresion
+				|	expresion '<' expresion
+				|	expresion MAYOR_IGUAL expresion
+				|	expresion MENOR_IGUAL expresion
+				|	expresion IGUAL expresion
+				|	expresion DISTINTO expresion
+				;
+				
+	subrout_if	:
+				;
+				
+	decision	:	IF '(' expresion ')' subrout_if '{' bloque '}'
+				|	IF '(' expresion ')' subrout_if '{' bloque '}' ELSE '{' bloque '}'
+				;
+
+	iteracion	:	WHILE '(' expresion ')' '{' bloque '}'
+				;

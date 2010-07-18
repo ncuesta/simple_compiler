@@ -1,0 +1,7 @@
+#!/bin/bash
+clear
+rm sc
+rm sc.tab.c
+bison sc.y
+gcc -o sc -O3 -lm -Wall sc.tab.c matrix.c reverse_polish.c stack.c symbol_table.c codegen.c functions.c variables.c
+
