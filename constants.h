@@ -12,5 +12,7 @@
 #define FIN 13
 #define N 8
 #define UNDEFINED -10
+#define MAXINT 32768
+#define MININT -32768
 
 #endif

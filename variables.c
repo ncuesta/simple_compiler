@@ -1,4 +1,5 @@
 #include "variables.h"
+#include "constants.h"
 
 char *get_type_string(Symbol *sym) {
 	if (sym->type == INT)
@@ -144,11 +145,16 @@ Symbol *check_divide(Symbol *sym1, Symbol *sym2, Element **elem_stack) {
 		sym2->value = 1;
 	}
 	if (sym2->value == 0) {
-		error = TRUE;
-		printf("sc: Error: division por 0.\n");
+/*		error = TRUE;*/
+		printf("sc: Advertencia: posibe division por 0!\n");
+		resp->value = MAXINT;
 	}
+	else
+	{
+		resp->value = sym1->value / sym2->value;
+	}
+	
 	*elem_stack = push('/', (int)NULL, (char *)0);
-	resp->value = sym1->value / sym2->value;
 
 	return resp;
 }

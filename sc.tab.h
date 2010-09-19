@@ -63,7 +63,7 @@ typedef union YYSTYPE
 {
 
 /* Line 1749 of yacc.c  */
-#line 21 "sc.y"
+#line 23 "sc.y"
 
 		int entero;
 		struct Symbol *simbolo;

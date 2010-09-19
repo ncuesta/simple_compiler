@@ -6,6 +6,8 @@ int labelnumber = 0;
 int state[8] = {0};
 Stack *pila = (Stack *)0;
 
+int incluir_rutina_div_cero = FALSE;
+
 /* Generar el codigo con el algoritmo de seguimiento de registros */
 void generate() {
 	Element *obj;
@@ -72,6 +74,18 @@ void generate() {
 			}
 		}
 	}
+	// Rutina de fin de programa
+	fprintf(output_fd, "\tLABEL FIN:          ;Fin de programa\n");
+	fprintf(output_fd, "\t\tMOV AH, 00h\n");
+	fprintf(output_fd, "\t\tINT 21h\n");
+	
+	if (incluir_rutina_div_cero)
+	{
+		fprintf(output_fd, "\n\tLABEL ZERODIV:      ;Rutina de notificacion de division por cero\n");
+		fprintf(output_fd, "\t\tNOTIFICAR ERROR!\n");
+		fprintf(output_fd, "\t\tJMP FIN\n\n");
+	}
+	
 	/* Generar las declaraciones de variables a partir de la tabla de simbolos */
 	Symbol *sym;
 
@@ -81,6 +95,8 @@ void generate() {
 		fprintf(output_fd, "\t\t_%s", sym->name);
 		fprintf(output_fd, "\tDB\t0\n");
 	}
+	
+	// Cierre de __MAIN
 	fprintf(output_fd, "END __MAIN\n");
 }
 
@@ -271,6 +287,13 @@ void generar_multiplicacion(Element *obj) {
 	spush(&pila, (void *)operando1);
 }
 
+/*
+void generar_rutina_div_cero()
+{
+	fprintf(output_fd, "");
+}
+*/
+
 void generar_division(Element *obj) {
 	Element *operando1 = (Element *)malloc(sizeof(Element));
 	Element *operando2 = (Element *)malloc(sizeof(Element));
@@ -346,9 +369,16 @@ void generar_division(Element *obj) {
 		state[operando2->value] = 1;
 	}
 	state[1] = 0;
+	
+	incluir_rutina_div_cero = TRUE;
+	
+	// Chequear por división por cero
+	fprintf(output_fd, "\t\tJNZ LABEL00%d\n", labelnumber);
+	fprintf(output_fd, "\t\tJMP ZERODIV\n");
+	fprintf(output_fd, "\tLABEL00%d:\n\t\tCBW\n", labelnumber);
+	labelnumber++;
 
 	//A esta altura, operando1 es AL y operando2 es otro registro distinto de AH
-	fprintf(output_fd, "\t\tCBW\n");
 	fprintf(output_fd, "\t\tIDIV\t%s\n", operando2->name);
 	state[operando2->value] = 0; /*Libero el registro*/
 	//Apilo AL, el cociente

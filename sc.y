@@ -8,6 +8,8 @@
 		#include "codegen.h"
 		#include "matrix.h"
 
+		#define YYERROR_VERBOSE 1
+		
 		FILE *source_fd, *output_fd;
 		int paso = 0;
 		Element *element_stack = (Element *)0;
