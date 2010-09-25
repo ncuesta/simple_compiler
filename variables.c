@@ -19,6 +19,14 @@ int compatible(Symbol *sym1, Symbol *sym2) {
 	return (sym1->type == sym2->type);
 }
 
+void check_overflow(Symbol *value)
+{
+	if (value->type == INT && value->value > MAXINT)
+	{
+		printf("sc: Aviso: desborde de entero con el valor %d (MAXINT = %d).\n", value->value, MAXINT);
+	}
+}
+
 void check_declare(Symbol *sym, int type) {
 	if (is_defined(sym->name))
 		printf("sc: Aviso: redefinicion de '%s'. Se ignora la ultima declaracion.\n", sym->name);
@@ -37,6 +45,7 @@ void check_declare_assign(Symbol *sym, int type, Symbol *value, Element **elem_s
 			*elem_stack = push(IDENTIFICADOR, (int)NULL, sym->name);
 			*elem_stack = push('=', (int)NULL, (char *)0);
 			sym->value = value->value;
+			check_overflow(sym);
 		} else {
 			error = TRUE;
 			printf("sc: Error: tipos incompatibles en la asignacion: %s y %s.\n", get_type_string(sym), get_type_string(value));
@@ -57,15 +66,19 @@ void check_assign(Symbol *sym, Symbol *value, Element **elem_stack) {
 		*elem_stack = push(IDENTIFICADOR, (int)NULL, sym->name);
 		*elem_stack = push('=', (int)NULL, (char *)0);
 		sym->value = value->value;
+		check_overflow(sym);
 	} else {
 		printf("sc: Aviso: identificador '%s' aun no declarado.\n\t\tSe lo declara e infiere el tipo %s del miembro derecho de la asignacion.\n", sym->name, get_type_string(value));
 		declare(sym, value->type, value->value);
 		*elem_stack = push(IDENTIFICADOR, (int)NULL, sym->name);
 		*elem_stack = push('=', (int)NULL, (char *)0);
+		check_overflow(sym);
 	}
 }
 
 Symbol *check_substract(Symbol *sym1, Symbol *sym2, Element **elem_stack) {
+	check_overflow(sym1);
+	check_overflow(sym2);
 	Symbol *resp = (Symbol *)malloc(sizeof(Symbol));
 	resp->type = INT;
 	if (!((((sym1->type == INT) && compatible(sym1, sym2))) || (sym1->type == UNDEFINED) || (sym2->type == UNDEFINED))) {
@@ -87,6 +100,8 @@ Symbol *check_substract(Symbol *sym1, Symbol *sym2, Element **elem_stack) {
 }
 
 Symbol *check_add(Symbol *sym1, Symbol *sym2, Element **elem_stack) {
+	check_overflow(sym1);
+	check_overflow(sym2);
 	Symbol *resp = (Symbol *)malloc(sizeof(Symbol));
 	resp->type = INT;
 	if (!((((sym1->type == INT) && compatible(sym1, sym2))) || (sym1->type == UNDEFINED) || (sym2->type == UNDEFINED))) {
@@ -103,11 +118,14 @@ Symbol *check_add(Symbol *sym1, Symbol *sym2, Element **elem_stack) {
 	}
 	*elem_stack = push('+', (int)NULL, (char *)0);
 	resp->value = sym1->value + sym2->value;
+	check_overflow(resp);
 
 	return resp;
 }
 
 Symbol *check_multiply(Symbol *sym1, Symbol *sym2, Element **elem_stack) {
+	check_overflow(sym1);
+	check_overflow(sym2);
 	Symbol *resp = (Symbol *)malloc(sizeof(Symbol));
 	resp->type = INT;
 	if (!((((sym1->type == INT) && compatible(sym1, sym2))) || (sym1->type == UNDEFINED) || (sym2->type == UNDEFINED))) {
@@ -124,11 +142,14 @@ Symbol *check_multiply(Symbol *sym1, Symbol *sym2, Element **elem_stack) {
 	}
 	*elem_stack = push('*', (int)NULL, (char *)0);
 	resp->value = sym1->value * sym2->value;
+	check_overflow(resp);
 
 	return resp;
 }
 
 Symbol *check_divide(Symbol *sym1, Symbol *sym2, Element **elem_stack) {
+	check_overflow(sym1);
+	check_overflow(sym2);
 	Symbol *resp = (Symbol *)malloc(sizeof(Symbol));
 	resp->type = INT;
 	if (!((((sym1->type == INT) && compatible(sym1, sym2))) || (sym1->type == UNDEFINED) || (sym2->type == UNDEFINED))) {
@@ -225,6 +246,8 @@ Symbol *check_compare(Symbol *sym1, Symbol *sym2, int operator, Element **elem_s
 		error = TRUE;
 		printf("sc: Error: tipos incompatibles en la comparacion: %s y %s.\n", get_type_string(sym1), get_type_string(sym2));
 	}
+	check_overflow(sym1);
+	check_overflow(sym2);
 	*elem_stack = push(operator, (int)NULL, (char *)0);
 	switch(operator) {
 		case '>':

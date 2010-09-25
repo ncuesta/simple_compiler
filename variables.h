@@ -16,6 +16,7 @@ extern int error;
 char *get_type_string(Symbol *sym);
 void declare(Symbol *sym, int type, int initial_value);
 int compatible(Symbol *sym1, Symbol *sym2);
+void check_overflow(Symbol *value);
 void check_declare(Symbol *sym, int type);
 void check_declare_assign(Symbol *sym, int type, Symbol *value, Element **elem_stack);
 void check_assign(Symbol *sym, Symbol *value, Element **elem_stack);

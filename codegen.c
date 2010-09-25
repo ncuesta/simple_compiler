@@ -7,13 +7,14 @@ int state[8] = {0};
 Stack *pila = (Stack *)0;
 
 int incluir_rutina_div_cero = FALSE;
+int incluir_rutina_overflow = FALSE;
 
 /* Generar el codigo con el algoritmo de seguimiento de registros */
 void generate() {
 	Element *obj;
 	extern Symbol *symbol_table;
 
-	fprintf(output_fd, ".MODEL SMALL\n.CODE\n\t\tORG\t100h\n__MAIN:\n");
+	fprintf(output_fd, ".MODEL SMALL\n.CODE\n\t\tORG\t100h\n__MAIN:\t\t\t\t\t; Cuerpo\n");
 	while (element_stack != (Element *)0) {
 		obj = pop();
 		if (is_operand(obj)) {
@@ -22,12 +23,14 @@ void generate() {
 			switch (obj->code) {
 				case '+':
 					generar_suma(obj);
+					incluir_chequeo_overflow();
 					break;
 				case '-':
 					generar_resta(obj);
 					break;
 				case '*':
 					generar_multiplicacion(obj);
+					incluir_chequeo_overflow();
 					break;
 				case '/':
 					generar_division(obj);
@@ -75,21 +78,28 @@ void generate() {
 		}
 	}
 	// Rutina de fin de programa
-	fprintf(output_fd, "\tLABEL FIN:          ;Fin de programa\n");
-	fprintf(output_fd, "\t\tMOV AH, 00h\n");
-	fprintf(output_fd, "\t\tINT 21h\n");
+	fprintf(output_fd, "\tLABEL FIN:\t\t\t; Fin de programa\n");
+	fprintf(output_fd, "\t\tMOV\tAH, 00h\n");
+	fprintf(output_fd, "\t\tINT\t21h\n");
 	
 	if (incluir_rutina_div_cero)
 	{
-		fprintf(output_fd, "\n\tLABEL ZERODIV:      ;Rutina de notificacion de division por cero\n");
-		fprintf(output_fd, "\t\tNOTIFICAR ERROR!\n");
-		fprintf(output_fd, "\t\tJMP FIN\n\n");
+		fprintf(output_fd, "\n\tLABEL ZERODIV:\t\t\t; Rutina de notificacion de division por cero\n");
+		fprintf(output_fd, "\t\tNOTIFICAR ERROR!\n"); // TODO: Generar código de notificación
+		fprintf(output_fd, "\t\tJMP\tFIN\n");
+	}
+	
+	if (incluir_rutina_overflow)
+	{
+		fprintf(output_fd, "\n\tLABEL OVERFLOW:\t\t\t; Rutina de notificación de desborde\n");
+		fprintf(output_fd, "\t\tNOTIFICAR ERROR!\n"); // TODO: Generar código de notificación
+		fprintf(output_fd, "\t\tJMP\tFIN\n");
 	}
 	
 	/* Generar las declaraciones de variables a partir de la tabla de simbolos */
 	Symbol *sym;
 
-	fprintf(output_fd, "\n\n\t\tORG\t1000h\n");
+	fprintf(output_fd, "\n\n\t\tORG\t1000h\t\t; Definicion de variables\n");
 	while (symbol_table != (Symbol *)0) {
 		sym = get_first();
 		fprintf(output_fd, "\t\t_%s", sym->name);
@@ -98,6 +108,17 @@ void generate() {
 	
 	// Cierre de __MAIN
 	fprintf(output_fd, "END __MAIN\n");
+}
+
+void incluir_chequeo_overflow()
+{
+	// Chequear por división por cero
+	fprintf(output_fd, "\t\tJNO\tLABEL00%d\t; Chequeo de desborde\n", labelnumber);
+	fprintf(output_fd, "\t\tJMP\tOVERFLOW\n");
+	fprintf(output_fd, "\tLABEL00%d:\n", labelnumber);
+	labelnumber++;
+	
+	incluir_rutina_overflow = TRUE;
 }
 
 void generar_suma(Element *obj) {
@@ -373,8 +394,8 @@ void generar_division(Element *obj) {
 	incluir_rutina_div_cero = TRUE;
 	
 	// Chequear por división por cero
-	fprintf(output_fd, "\t\tJNZ LABEL00%d\n", labelnumber);
-	fprintf(output_fd, "\t\tJMP ZERODIV\n");
+	fprintf(output_fd, "\t\tJNZ\tLABEL00%d\t; Chequeo de división por cero\n", labelnumber);
+	fprintf(output_fd, "\t\tJMP\tZERODIV\n");
 	fprintf(output_fd, "\tLABEL00%d:\n\t\tCBW\n", labelnumber);
 	labelnumber++;
 

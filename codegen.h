@@ -26,6 +26,7 @@ void generar_comparacion(Element *obj, char *etiqueta);
 void generar_BF(Element *obj);
 void generar_BI(Element *obj);
 void create_label(Element *obj);
+void incluir_chequeo_overflow();
 Element *new_variable();
 char *translate_index(int index);
 Element *load_register(int index);
