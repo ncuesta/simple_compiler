@@ -103,7 +103,7 @@
 				;
 	
 	factor		:	IDENTIFICADOR
-						{	element_stack = push(IDENTIFICADOR, (int)NULL, $1->name);
+						{	element_stack = push(IDENTIFICADOR, 0, $1->name);
 							$$ = $1;	}
 				|	NUMERO
 						{	element_stack = push(NUMERO, $1, (char *)0);

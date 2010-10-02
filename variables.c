@@ -42,8 +42,8 @@ void check_declare_assign(Symbol *sym, int type, Symbol *value, Element **elem_s
 		sym->type = type;
 		if (compatible(sym, value)) {
 			declare(sym, type, value->value);
-			*elem_stack = push(IDENTIFICADOR, (int)NULL, sym->name);
-			*elem_stack = push('=', (int)NULL, (char *)0);
+			*elem_stack = push(IDENTIFICADOR, 0, sym->name);
+			*elem_stack = push('=', 0, (char *)0);
 			sym->value = value->value;
 			check_overflow(sym);
 		} else {
@@ -63,15 +63,15 @@ void check_assign(Symbol *sym, Symbol *value, Element **elem_stack) {
 			printf("sc: Aviso: identificador '%s' sin tipo asignado aun.\n\t\tSe infiere el tipo %s del miembro derecho de la asignacion.\n", sym->name, get_type_string(value));
 			sym->type = value->type;
 		}
-		*elem_stack = push(IDENTIFICADOR, (int)NULL, sym->name);
-		*elem_stack = push('=', (int)NULL, (char *)0);
+		*elem_stack = push(IDENTIFICADOR, 0, sym->name);
+		*elem_stack = push('=', 0, (char *)0);
 		sym->value = value->value;
 		check_overflow(sym);
 	} else {
 		printf("sc: Aviso: identificador '%s' aun no declarado.\n\t\tSe lo declara e infiere el tipo %s del miembro derecho de la asignacion.\n", sym->name, get_type_string(value));
 		declare(sym, value->type, value->value);
-		*elem_stack = push(IDENTIFICADOR, (int)NULL, sym->name);
-		*elem_stack = push('=', (int)NULL, (char *)0);
+		*elem_stack = push(IDENTIFICADOR, 0, sym->name);
+		*elem_stack = push('=', 0, (char *)0);
 		check_overflow(sym);
 	}
 }
@@ -93,7 +93,7 @@ Symbol *check_substract(Symbol *sym1, Symbol *sym2, Element **elem_stack) {
 		printf("sc: Aviso: Tipo int inferido de la resta para '%s' sin tipo asignado aun.\n", sym2->name);
 		sym2->type = INT;
 	}
-	*elem_stack = push('-', (int)NULL, (char *)0);
+	*elem_stack = push('-', 0, (char *)0);
 	resp->value = sym1->value - sym2->value;
 
 	return resp;
@@ -116,7 +116,7 @@ Symbol *check_add(Symbol *sym1, Symbol *sym2, Element **elem_stack) {
 		printf("sc: Aviso: Tipo int inferido de la suma para '%s' sin tipo asignado aun.\n", sym2->name);
 		sym2->type = INT;
 	}
-	*elem_stack = push('+', (int)NULL, (char *)0);
+	*elem_stack = push('+', 0, (char *)0);
 	resp->value = sym1->value + sym2->value;
 	check_overflow(resp);
 
@@ -140,7 +140,7 @@ Symbol *check_multiply(Symbol *sym1, Symbol *sym2, Element **elem_stack) {
 		printf("sc: Aviso: Tipo int inferido de la multiplicacion para '%s' sin tipo asignado aun.\n", sym2->name);
 		sym2->type = INT;
 	}
-	*elem_stack = push('*', (int)NULL, (char *)0);
+	*elem_stack = push('*', 0, (char *)0);
 	resp->value = sym1->value * sym2->value;
 	check_overflow(resp);
 
@@ -175,7 +175,7 @@ Symbol *check_divide(Symbol *sym1, Symbol *sym2, Element **elem_stack) {
 		resp->value = sym1->value / sym2->value;
 	}
 	
-	*elem_stack = push('/', (int)NULL, (char *)0);
+	*elem_stack = push('/', 0, (char *)0);
 
 	return resp;
 }
@@ -195,7 +195,7 @@ Symbol *check_or(Symbol *sym1, Symbol *sym2, Element **elem_stack) {
 		printf("sc: Aviso: identificador '%s' sin tipo asignado aun. Se infiere su tipo a bool.\n", sym2->name);
 		sym2->type = BOOL;
 	}
-	*elem_stack = push(OR, (int)NULL, (char *)0);
+	*elem_stack = push(OR, 0, (char *)0);
 	resp->value = sym1->value || sym2->value;
 
 	return resp;
@@ -216,7 +216,7 @@ Symbol *check_and(Symbol *sym1, Symbol *sym2, Element **elem_stack) {
 		printf("sc: Aviso: identificador '%s' sin tipo asignado aun. Se infiere su tipo a bool.\n", sym2->name);
 		sym2->type = BOOL;
 	}
-	*elem_stack = push(AND, (int)NULL, (char *)0);
+	*elem_stack = push(AND, 0, (char *)0);
 	resp->value = sym1->value && sym2->value;
 
 	return resp;
@@ -233,7 +233,7 @@ Symbol *check_not(Symbol *sym, Element **elem_stack) {
 		printf("sc: Aviso: identificador '%s' sin tipo asignado aun. Se infiere su tipo a bool.\n", sym->name);
 		sym->type = BOOL;
 	}
-	*elem_stack = push('!', (int)NULL, (char *)0);
+	*elem_stack = push('!', 0, (char *)0);
 	resp->value = !sym->value;
 
 	return resp;
@@ -248,7 +248,7 @@ Symbol *check_compare(Symbol *sym1, Symbol *sym2, int operator, Element **elem_s
 	}
 	check_overflow(sym1);
 	check_overflow(sym2);
-	*elem_stack = push(operator, (int)NULL, (char *)0);
+	*elem_stack = push(operator, 0, (char *)0);
 	switch(operator) {
 		case '>':
 			resp->value = sym1->value > sym2->value;
@@ -274,7 +274,7 @@ Symbol *check_equality(Symbol *sym1, Symbol *sym2, Element **elem_stack) {
 		error = TRUE;
 		printf("sc: Error: tipos incompatibles en la comparacion por igualdad: %s y %s.\n", get_type_string(sym1), get_type_string(sym2));
 	}
-	*elem_stack = push(IGUAL, (int)NULL, (char *)0);
+	*elem_stack = push(IGUAL, 0, (char *)0);
 
 	return resp;
 }
@@ -286,7 +286,7 @@ Symbol *check_inequality(Symbol *sym1, Symbol *sym2, Element **elem_stack) {
 		error = TRUE;
 		printf("sc: Error: tipos incompatibles en la comparacion por desigualdad: %s y %s.\n", get_type_string(sym1), get_type_string(sym2));
 	}
-	*elem_stack = push(DISTINTO, (int)NULL, (char *)0);
+	*elem_stack = push(DISTINTO, 0, (char *)0);
 
 	return resp;
 }
@@ -294,7 +294,7 @@ Symbol *check_inequality(Symbol *sym1, Symbol *sym2, Element **elem_stack) {
 void insert_BF(Stack **st, Element **elem_stack) {
 	*elem_stack = push(PASO, -1, (char *)0);
 	spush (st, (void *)(*elem_stack));
-	*elem_stack = push(BF, (int)NULL, (char *)0);
+	*elem_stack = push(BF, 0, (char *)0);
 }
 
 void check_simple_if(Symbol *condition, Stack **st, Element **elem_stack, int paso) {
@@ -319,7 +319,7 @@ void check_complex_if(Symbol *condition, Stack **st, Element **elem_stack, int p
 	spop(st, &pointer);
 	*elem_stack = push(PASO, -1, (char *)0);
 	spush(st, (void *)(*elem_stack));
-	*elem_stack = push(BI, (int)NULL, (char *)0);
+	*elem_stack = push(BI, 0, (char *)0);
 	((Element *)pointer)->value = paso;
 	*elem_stack = push(CL, paso, (char *)0);
 }
@@ -346,7 +346,7 @@ void check_while(Symbol *condition, Stack **st, Element **elem_stack, int paso) 
 	}
 	*elem_stack = push(PASO, -1, (char *)0);
 	spush (st, (void *)(*elem_stack));
-	*elem_stack = push(BF, (int)NULL, (char *)0);
+	*elem_stack = push(BF, 0, (char *)0);
 }
 
 void check_while_block(Stack **st, Element **elem_stack, int paso) {
@@ -355,7 +355,7 @@ void check_while_block(Stack **st, Element **elem_stack, int paso) {
 	spop(st, &pointer2);
 	spop(st, &pointer);
 	*elem_stack = push(PASO, *(int *)pointer, (char *)0);
-	*elem_stack = push(BI, (int)NULL, (char *)0);
+	*elem_stack = push(BI, 0, (char *)0);
 	((Element *)pointer2)->value = paso;
 	*elem_stack = push(CL, paso, (char *)0);
 }

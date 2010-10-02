@@ -85,14 +85,14 @@ void generate() {
 	if (incluir_rutina_div_cero)
 	{
 		fprintf(output_fd, "\n\tLABEL ZERODIV:\t\t\t; Rutina de notificacion de division por cero\n");
-		fprintf(output_fd, "\t\tNOTIFICAR ERROR!\n"); // TODO: Generar código de notificación
+		fprintf(output_fd, "\t\tNOP\t\t\t; Notificar error\n");
 		fprintf(output_fd, "\t\tJMP\tFIN\n");
 	}
 	
 	if (incluir_rutina_overflow)
 	{
 		fprintf(output_fd, "\n\tLABEL OVERFLOW:\t\t\t; Rutina de notificación de desborde\n");
-		fprintf(output_fd, "\t\tNOTIFICAR ERROR!\n"); // TODO: Generar código de notificación
+		fprintf(output_fd, "\t\tNOP\t\t\t; Notificar error\n");
 		fprintf(output_fd, "\t\tJMP\tFIN\n");
 	}
 	
