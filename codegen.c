@@ -6,9 +6,6 @@ int labelnumber = 0;
 int state[8] = {0};
 Stack *pila = (Stack *)0;
 
-int incluir_rutina_div_cero = FALSE;
-int incluir_rutina_overflow = FALSE;
-
 /* Generar el codigo con el algoritmo de seguimiento de registros */
 void generate() {
 	Element *obj;
@@ -23,14 +20,12 @@ void generate() {
 			switch (obj->code) {
 				case '+':
 					generar_suma(obj);
-					incluir_chequeo_overflow();
 					break;
 				case '-':
 					generar_resta(obj);
 					break;
 				case '*':
 					generar_multiplicacion(obj);
-					incluir_chequeo_overflow();
 					break;
 				case '/':
 					generar_division(obj);
@@ -82,20 +77,6 @@ void generate() {
 	fprintf(output_fd, "\t\tMOV\tAH, 00h\n");
 	fprintf(output_fd, "\t\tINT\t21h\n");
 	
-	if (incluir_rutina_div_cero)
-	{
-		fprintf(output_fd, "\n\tLABEL ZERODIV:\t\t\t; Rutina de notificacion de division por cero\n");
-		fprintf(output_fd, "\t\tNOP\t\t\t; Notificar error\n");
-		fprintf(output_fd, "\t\tJMP\tFIN\n");
-	}
-	
-	if (incluir_rutina_overflow)
-	{
-		fprintf(output_fd, "\n\tLABEL OVERFLOW:\t\t\t; Rutina de notificación de desborde\n");
-		fprintf(output_fd, "\t\tNOP\t\t\t; Notificar error\n");
-		fprintf(output_fd, "\t\tJMP\tFIN\n");
-	}
-	
 	/* Generar las declaraciones de variables a partir de la tabla de simbolos */
 	Symbol *sym;
 
@@ -110,15 +91,19 @@ void generate() {
 	fprintf(output_fd, "END __MAIN\n");
 }
 
-void incluir_chequeo_overflow()
+void incluir_chequeo_overflow(Element *operando)
 {
-	// Chequear por división por cero
 	fprintf(output_fd, "\t\tJNO\tLABEL00%d\t; Chequeo de desborde\n", labelnumber);
-	fprintf(output_fd, "\t\tJMP\tOVERFLOW\n");
+  fprintf(output_fd, "\t\tNOP\t\t\t; Notificar el error\n");
+  fprintf(output_fd, "\t\tMOV\t%s, %d\t; Se salva la ejecucion cambiando el valor por MAXINT (%d)\n", operando->name, MAXINT, MAXINT);////
 	fprintf(output_fd, "\tLABEL00%d:\n", labelnumber);
 	labelnumber++;
-	
-	incluir_rutina_overflow = TRUE;
+}
+
+void incluir_recuperacion_div_cero(Element *operando)
+{
+  fprintf(output_fd, "\t\tNOP\t\t\t; Notificar el error\n");
+  fprintf(output_fd, "\t\tMOV\t%s, 1\t; Se salva la ejecucion dividiendo por 1\n", operando->name);
 }
 
 void generar_suma(Element *obj) {
@@ -150,6 +135,9 @@ void generar_suma(Element *obj) {
 			} else {
 				fprintf(output_fd, "\t\tADD\t%s, %d\n", operando2->name, operando1->value);
 			}
+
+      incluir_chequeo_overflow(operando2);
+
 			spush(&pila, (void *)operando2);
 		} else {
 			//Operando-Operando
@@ -172,6 +160,9 @@ void generar_suma(Element *obj) {
 					fprintf(output_fd, "\t\tADD\t%s, %d\n", op_aux->name, operando2->value);
 				}
 			}
+
+      incluir_chequeo_overflow(op_aux);
+
 			state[op_aux->value] = 1;
 			spush(&pila, (void *)op_aux);
 		}
@@ -303,17 +294,13 @@ void generar_multiplicacion(Element *obj) {
 
 	//A esta altura, operando1 es AL y operando2 es otro registro distinto de AH
 	fprintf(output_fd, "\t\tIMUL\t%s\n", operando2->name);
+
+  incluir_chequeo_overflow(operando1);
+
 	state[operando2->value] = 0; /*Libero el registro*/
 	//Apilo AL, la parte baja del resultado
 	spush(&pila, (void *)operando1);
 }
-
-/*
-void generar_rutina_div_cero()
-{
-	fprintf(output_fd, "");
-}
-*/
 
 void generar_division(Element *obj) {
 	Element *operando1 = (Element *)malloc(sizeof(Element));
@@ -391,13 +378,14 @@ void generar_division(Element *obj) {
 	}
 	state[1] = 0;
 	
-	incluir_rutina_div_cero = TRUE;
-	
 	// Chequear por división por cero
 	fprintf(output_fd, "\t\tJNZ\tLABEL00%d\t; Chequeo de división por cero\n", labelnumber);
-	fprintf(output_fd, "\t\tJMP\tZERODIV\n");
+
+  incluir_recuperacion_div_cero(operando2);
+
 	fprintf(output_fd, "\tLABEL00%d:\n\t\tCBW\n", labelnumber);
 	labelnumber++;
+
 
 	//A esta altura, operando1 es AL y operando2 es otro registro distinto de AH
 	fprintf(output_fd, "\t\tIDIV\t%s\n", operando2->name);
