@@ -1,13 +1,14 @@
 CC=gcc
 CFLAGS=-O3 -lm -Wall
 BISON=`which bison`
-INPUT_FILES=sc.tab.c matrix.c reverse_polish.c stack.c symbol_table.c codegen.c functions.c variables.c
+SRC="src"
+INPUT_FILES=$(SRC)/sc.tab.c $(SRC)/matrix.c $(SRC)/reverse_polish.c $(SRC)/stack.c $(SRC)/symbol_table.c $(SRC)/codegen.c $(SRC)/functions.c $(SRC)/variables.c
 
 all: clean bison 
 	@$(CC) $(CFLAGS) $(INPUT_FILES) -o sc
 
 clean:
-	@rm -f *.o sc sc.tab.c
+	@rm -f *.o sc $(SRC)/sc.tab.c
 
 bison:
-	@$(BISON) sc.y
+	@$(BISON) $(SRC)/sc.y --output=$(SRC)/sc.tab.c
