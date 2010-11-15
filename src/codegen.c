@@ -103,7 +103,7 @@ void incluir_chequeo_overflow(Element *operando)
 void incluir_recuperacion_div_cero(Element *operando)
 {
   fprintf(output_fd, "\t\tNOP\t\t\t; Notificar el error\n");
-  fprintf(output_fd, "\t\tMOV\t%s, 1\t; Se salva la ejecucion dividiendo por 1\n", operando->name);
+  fprintf(output_fd, "\t\tMOV\t%s, 1\t\t; Se salva la ejecucion dividiendo por 1\n", operando->name);
 }
 
 void generar_suma(Element *obj) {
